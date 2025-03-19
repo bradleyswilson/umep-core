@@ -2,17 +2,18 @@
 
 ## Setup
 
+- Make sure you have a Python installation on your system
 - Install `vscode` and `github` apps.
-- Install `uv` package manager.
+- Install `uv` package manager (e.g. `pip install uv`).
 - Clone repo.
-- Run `uv sync` to install `.venv` and packages.
+- Run `uv sync` from the directory where `pyproject.toml` in located to install `.venv` and packages.
 - Select `.venv` Python environment.
 - FYI: Recommended settings and extensions are included in the repo. Proceed if prompted to install extensions.
 - Develop and commit to Github often!
 
 ## Demo
 
-See the demo notebook file at [tests/demo.py](tests/demo.py).
+See the demo notebook file at [/demo.py](/demo.py).
 
 The demo uses the datasets included in the tests folder
 
@@ -36,14 +37,23 @@ Lindberg F, Grimmond CSB, Gabey A, Huang B, Kent CW, Sun T, Theeuwes N, Järvi L
 
 ## Demo Data
 
-### Tree Canopies
+Two seprated demo dataset are included
+
+### ATENS (vector data)
+
+#### Tree Canopies
 
 Copernicus
 
-### Trees
+#### Trees
 
 https://walkable.cityofathens.gr/home
 
-### Buildings
+#### Buildings
 
 http://gis.cityofathens.gr/layers/athens_geonode_data:geonode:c40solarmap
+
+### Gothenburg (raster data)
+
+Standard dataset used in tutorials (https://umep-docs.readthedocs.io/en/latest/Tutorials.html)
+
