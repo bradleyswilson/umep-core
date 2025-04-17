@@ -15,7 +15,9 @@
 
 See the demo notebook file at [/demo.py](/demo.py).
 
-The demo uses the datasets included in the tests folder
+Also, a test with GBG data is found in [/solweig_gbg_test.py](/solweig_gbg_test.py)
+
+The demo and the test uses the datasets included in the tests folder
 
 ## Original code
 
