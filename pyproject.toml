@@ -53,6 +53,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
 write_to = "umep/_version.py"
+local_scheme = "no-local-version"
 
 [dependency-groups]
 dev = ["ipykernel>=6.29.5", "pip>=25.0.1", "poethepoet>=0.33.1"]
