@@ -1,5 +1,6 @@
 [project]
 name = "umep"
+version = "0.0.1a4"
 description = "urban multi-scale environmental predictor"
 readme = "README.md"
 requires-python = ">=3.10, <3.14"
@@ -45,15 +46,10 @@ dependencies = [
     "pythermalcomfort>=2.10.0",
     "pyproj>=3.7.0",
 ]
-dynamic = ["version"]
 
 [build-system]
 requires = ["setuptools>=61.0", "wheel", "setuptools_scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
-
-[tool.setuptools_scm]
-write_to = "umep/_version.py"
-local_scheme = "no-local-version"
 
 [dependency-groups]
 dev = ["ipykernel>=6.29.5", "pip>=25.0.1", "poethepoet>=0.33.1"]
