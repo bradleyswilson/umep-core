@@ -62,7 +62,7 @@ from umep import common
 from umep.functions.SOLWEIGpython import PET_calculations as p
 from umep.functions.SOLWEIGpython import Solweig_2022a_calc_forprocessing as so
 from umep.functions.SOLWEIGpython import UTCI_calculations as utci
-from umep.functions.SOLWEIGpython import WriteMetadataSOLWEIG
+from umep.functions.SOLWEIGpython import WriteMetadataSOLWEIG_old
 from umep.util.SEBESOLWEIGCommonFiles.clearnessindex_2013b import clearnessindex_2013b
 from umep.util.SEBESOLWEIGCommonFiles.Solweig_v2015_metdata_noload import (
     Solweig_2015a_metdata_noload,
@@ -373,7 +373,7 @@ def generate_solweig(
     timeadd = 0.0
     firstdaytime = 1.0
 
-    WriteMetadataSOLWEIG.writeRunInfo(
+    WriteMetadataSOLWEIG_old.writeRunInfo(
         out_path_str,
         dsm_path,
         dsm_crs,
