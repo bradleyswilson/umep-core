@@ -2,7 +2,13 @@
 .DS_Store
 
 # geopackage peripheral files
-*.gpkg*
+*.gpkg-*
+
+# tif peripheral files
+*.tif.*
+
+# asc peripheral files
+*.asc.*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

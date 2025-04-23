@@ -1,17 +1,13 @@
-import sys
 from builtins import str
 
 # This file prints out run information used for each specific run
 from time import strftime
 
-import qgis.core
-from osgeo import gdal, osr
-
 
 def writeRunInfo(
     folderPath,
     filepath_dsm,
-    gdal_dsm,
+    dsm_crs,
     usevegdem,
     filePath_cdsm,
     trunkfile,
@@ -24,7 +20,6 @@ def writeRunInfo(
     metfileexist,
     filePath_metfile,
     metdata,
-    plugin_dir,
     absK,
     absL,
     albedo_b,
@@ -75,12 +70,6 @@ def writeRunInfo(
         file.write("\n")
         file.write("Version: " + "SOLWEIG v2022a")
         file.write("\n")
-        file.write("Pyton version: " + str(sys.version))
-        file.write("\n")
-        file.write("GDAL version: " + str(gdal.__version__))
-        file.write("\n")
-        file.write("QGIS version: " + str(qgis.core.Qgis.QGIS_VERSION))
-        file.write("\n")
         file.write("\n")
         file.write("SURFACE DATA")
         file.write("\n")
@@ -89,12 +78,10 @@ def writeRunInfo(
         file.write("Model domain: rows = " + str(rows) + ", columns = " + str(cols))
         file.write("\n")
         # get CRS
-        prj = gdal_dsm.GetProjection()
-        srs = osr.SpatialReference(wkt=prj)
-        if srs.IsProjected:
-            file.write("Projected reference system: " + srs.GetAttrValue("projcs"))
-        file.write("\n")
-        file.write("Geographical coordinate system: " + srs.GetAttrValue("geogcs"))
+        if dsm_crs.is_projected:
+            file.write("Projected reference system: " + str(dsm_crs.to_epsg()))
+        else:
+            file.write("Geographical coordinate system: " + str(dsm_crs.to_epsg()))
         file.write("\n")
         file.write("Latitude: " + str(lat))
         file.write("\n")
@@ -119,8 +106,6 @@ def writeRunInfo(
             file.write("Vegetation scheme inactive")
             file.write("\n")
         if landcover == 1:
-            file.write("Landcover scheme active. Parameters taken from: " + plugin_dir + "/landcoverclasses_2016a.txt")
-            file.write("\n")
             file.write("Landcover grid: " + filePath_lc)
             file.write("\n")
         else:
