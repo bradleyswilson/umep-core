@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import numpy as np
 import rasterio
 from rasterio.features import rasterize
@@ -20,17 +22,24 @@ def rasterise_gdf(gdf, geom_col, ht_col, bbox=None, pixel_size: int = 1):
     # Create a blank array for the raster
     raster = np.zeros((height, width), dtype=np.float32)
     # Burn geometries into the raster
-    shapes = ((geom, value) for geom, value in zip(gdf[geom_col], gdf[ht_col]))
-    raster = rasterize(
-        shapes, out_shape=raster.shape, transform=transform, fill=0, dtype=np.float32
-    )
+    shapes = ((geom, value) for geom, value in zip(gdf[geom_col], gdf[ht_col], strict=True))
+    raster = rasterize(shapes, out_shape=raster.shape, transform=transform, fill=0, dtype=np.float32)
 
     return raster, transform
+
+
+def check_path(path, make_dir=False):
+    path = Path(path)
+    path = path.absolute()
+    if make_dir is False and not path.parent.exists():
+        raise OSError(f"Path {path.parent} does not exist.")
+    return path
 
 
 # Helper function to save raster using rasterio
 def save_raster(out_path, data, transform, crs):
     """Save raster data using rasterio."""
+    out_path = check_path(out_path, make_dir=True)
     with rasterio.open(
         out_path,
         "w",
@@ -51,6 +60,7 @@ def load_raster(
     band: int = 0,
 ):
     # Open the raster file with rasterio
+    path = check_path(path, make_dir=False)
     with rasterio.open(path) as dataset:
         crs = dataset.crs
         dataset_bounds = dataset.bounds
@@ -63,9 +73,7 @@ def load_raster(
                 and dataset_bounds.bottom <= bbox[1] <= dataset_bounds.top
                 and dataset_bounds.bottom <= bbox[3] <= dataset_bounds.top
             ):
-                raise ValueError(
-                    "Bounding box is not fully contained within the raster dataset bounds"
-                )
+                raise ValueError("Bounding box is not fully contained within the raster dataset bounds")
             rast, transf = mask(dataset, [bbox_geom], crop=True)
         else:
             rast = dataset.read()

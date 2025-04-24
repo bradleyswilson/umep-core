@@ -45,6 +45,8 @@ dependencies = [
     "tqdm>=4.66.5",
     "pythermalcomfort>=2.10.0",
     "pyproj>=3.7.0",
+    "xarray>=2025.3.1",
+    "rioxarray>=0.19.0",
 ]
 
 [build-system]

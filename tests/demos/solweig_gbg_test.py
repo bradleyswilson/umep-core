@@ -7,8 +7,9 @@ from umep import (
 )
 from umep.functions.SOLWEIGpython import Solweig_run as sr
 
+# %%
 bbox = [476070, 4203550, 477110, 4204330]
-working_folder = "temp/test2"
+working_folder = "temp/gothenburg"
 pixel_resolution = 1  # metres
 working_crs = 3007
 

@@ -14,7 +14,6 @@ from ...functions.SOLWEIGpython import PET_calculations as p
 from ...functions.SOLWEIGpython import UTCI_calculations as utci
 from ...functions.SOLWEIGpython.CirclePlotBar import PolarBarPlot
 from ...functions.SOLWEIGpython.wall_surface_temperature import load_walls
-from ...functions.SOLWEIGpython.wallOfInterest import pointOfInterest
 from ...functions.SOLWEIGpython.patch_characteristics import hemispheric_image
 from ...functions.SOLWEIGpython.wallsAsNetCDF import walls_as_netcdf
 from ...functions.SOLWEIGpython.Tgmaps_v1 import Tgmaps_v1
@@ -31,11 +30,13 @@ from shutil import copyfile
 try:
     from osgeo import gdal
     from osgeo.gdalconst import *
-    from ...util.misc import saveraster, xy2latlon_fromraster
     from qgis.core import QgsRasterLayer
+    
+    from ...functions.SOLWEIGpython.wallOfInterest import pointOfInterest
+    from ...util.misc import saveraster, xy2latlon_fromraster
 except:
     pass
-from qgis.core import QgsRasterLayer
+
 # imports for standalone
 try:
     from umep import common
