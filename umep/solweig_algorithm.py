@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 /***************************************************************************
  ProcessingUMEP
@@ -64,7 +62,7 @@ from umep import common
 from umep.functions.SOLWEIGpython import PET_calculations as p
 from umep.functions.SOLWEIGpython import Solweig_2022a_calc_forprocessing as so
 from umep.functions.SOLWEIGpython import UTCI_calculations as utci
-from umep.functions.SOLWEIGpython import WriteMetadataSOLWEIG
+from umep.functions.SOLWEIGpython import WriteMetadataSOLWEIG_old
 from umep.util.SEBESOLWEIGCommonFiles.clearnessindex_2013b import clearnessindex_2013b
 from umep.util.SEBESOLWEIGCommonFiles.Solweig_v2015_metdata_noload import (
     Solweig_2015a_metdata_noload,
@@ -122,9 +120,7 @@ def generate_solweig(
 
     # veg transmissivity as percentage
     if not trans_veg >= 0 and trans_veg <= 100:
-        raise ValueError(
-            "Vegetation transmissivity should be a number between 0 and 100"
-        )
+        raise ValueError("Vegetation transmissivity should be a number between 0 and 100")
     trans_veg = trans_veg / 100.0
 
     out_path = Path(out_dir)
@@ -159,16 +155,12 @@ def generate_solweig(
         veg_dsm, veg_dsm_transf, veg_dsm_crs = common.load_raster(veg_dsm_path, bbox)
         veg_dsm_height, veg_dsm_width = veg_dsm.shape
         if not (veg_dsm_width == dsm_width) & (veg_dsm_height == dsm_height):
-            raise ValueError(
-                "Error in Vegetation Canopy DSM: All rasters must be of same extent and resolution"
-            )
+            raise ValueError("Error in Vegetation Canopy DSM: All rasters must be of same extent and resolution")
         trunkratio = trunk_zone_ht_perc / 100.0
         veg_dsm_2 = veg_dsm * trunkratio
         veg_dsm_2_height, veg_dsm_2_width = veg_dsm_2.shape
         if not (veg_dsm_2_width == dsm_width) & (veg_dsm_2_height == dsm_height):
-            raise ValueError(
-                "Error in Trunk Zone DSM: All rasters must be of same extent and resolution"
-            )
+            raise ValueError("Error in Trunk Zone DSM: All rasters must be of same extent and resolution")
         veg_dsm_2_path = None
     else:
         usevegdem = 0
@@ -184,9 +176,7 @@ def generate_solweig(
     demforbuild = 0
 
     # SVFs
-    temp_dir_name = "temp-" + "".join(
-        random.choice(string.ascii_uppercase) for _ in range(8)
-    )
+    temp_dir_name = "temp-" + "".join(random.choice(string.ascii_uppercase) for _ in range(8))
     temp_dir = out_path_str + "/" + temp_dir_name
     zip = zipfile.ZipFile(svf_path, "r")
     zip.extractall(temp_dir)
@@ -223,25 +213,19 @@ def generate_solweig(
 
     svf_dsm_height, svf_dsm_width = svfveg.shape
     if not (svf_dsm_width == dsm_width) & (svf_dsm_height == dsm_height):
-        raise ValueError(
-            "Error in SVF: All rasters must be of same extent and resolution"
-        )
+        raise ValueError("Error in SVF: All rasters must be of same extent and resolution")
     tmp = svf + svfveg - 1.0
     tmp[tmp < 0.0] = 0.0
-    svfalfa = np.arcsin(np.exp((np.log((1.0 - tmp)) / 2.0)))
+    svfalfa = np.arcsin(np.exp(np.log(1.0 - tmp) / 2.0))
 
     wh_rast, wh_transf, wh_crs = common.load_raster(wall_ht_path, bbox)
     wh_height, wh_width = wh_rast.shape
     if not (wh_width == dsm_width) & (wh_height == dsm_height):
-        raise ValueError(
-            "Error in Wall height raster: All rasters must be of same extent and resolution"
-        )
+        raise ValueError("Error in Wall height raster: All rasters must be of same extent and resolution")
     wa_rast, wa_transf, wa_crs = common.load_raster(wall_aspect_path, bbox)
     wa_height, wa_width = wa_rast.shape
     if not (wa_width == dsm_width) & (wa_height == dsm_height):
-        raise ValueError(
-            "Error in Wall aspect raster: All rasters must be of same extent and resolution"
-        )
+        raise ValueError("Error in Wall aspect raster: All rasters must be of same extent and resolution")
 
     # Metdata
     metfileexist = 1
@@ -294,9 +278,7 @@ def generate_solweig(
     print("Calculating sun positions for each time step")
     met_data = umep_df.to_numpy()
     location = {"longitude": lon, "latitude": lat, "altitude": alt}
-    YYYY, altitude, azimuth, zen, jday, leafon, dectime, altmax = (
-        Solweig_2015a_metdata_noload(met_data, location, utc)
-    )
+    YYYY, altitude, azimuth, zen, jday, leafon, dectime, altmax = Solweig_2015a_metdata_noload(met_data, location, utc)
 
     # Creating vectors from meteorological input
     DOY = umep_df.loc[:, "id"].values
@@ -315,7 +297,7 @@ def generate_solweig(
     first = np.round(height)
     if first == 0.0:
         first = 1.0
-    second = np.round((height * 10.0))  # NOTE: using 10 instead of 20
+    second = np.round(height * 10.0)  # NOTE: using 10 instead of 20
 
     if usevegdem == 1:
         # Conifer or deciduous
@@ -324,9 +306,9 @@ def generate_solweig(
         else:
             leafon = np.zeros((1, DOY.shape[0]))
             if leaf_start > leaf_end:
-                leaf_bool = (DOY > leaf_start) | (DOY < leaf_end)
+                leaf_bool = (leaf_start < DOY) | (leaf_end > DOY)
             else:
-                leaf_bool = (DOY > leaf_start) & (DOY < leaf_end)
+                leaf_bool = (leaf_start < DOY) & (leaf_end > DOY)
             leafon[0, leaf_bool] = 1
 
         # % Vegetation transmittivity of shortwave radiation
@@ -344,11 +326,9 @@ def generate_solweig(
         veg_dsm_2[veg_dsm_2 == dsm] = 0
 
         # % Bush separation
-        bush = np.logical_not((veg_dsm_2 * veg_dsm)) * veg_dsm
+        bush = np.logical_not(veg_dsm_2 * veg_dsm) * veg_dsm
 
-        svfbuveg = svf - (1.0 - svfveg) * (
-            1.0 - trans_veg
-        )  # % major bug fixed 20141203
+        svfbuveg = svf - (1.0 - svfveg) * (1.0 - trans_veg)  # % major bug fixed 20141203
     else:
         psi = leafon * 0.0 + 1.0
         svfbuveg = svf
@@ -431,7 +411,7 @@ def generate_solweig(
     timeadd = 0.0
     firstdaytime = 1.0
 
-    WriteMetadataSOLWEIG.writeRunInfo(
+    WriteMetadataSOLWEIG_old.writeRunInfo(
         out_path_str,
         dsm_path,
         dsm_crs,
@@ -463,11 +443,11 @@ def generate_solweig(
         as_cylinder,
         demforbuild,
         anisotropic_sky,
+        None,
+        None,
     )
 
-    print(
-        "Writing settings for this model run to specified output folder (Filename: RunInfoSOLWEIG_YYYY_DOY_HHMM.txt)"
-    )
+    print("Writing settings for this model run to specified output folder (Filename: RunInfoSOLWEIG_YYYY_DOY_HHMM.txt)")
 
     #  If metfile starts at night
     CI = 1.0
@@ -481,11 +461,11 @@ def generate_solweig(
     # Initiate array for I0 values
     if np.unique(DOY).shape[0] > 1:
         unique_days = np.unique(DOY)
-        first_unique_day = DOY[DOY == unique_days[0]]
-        I0_array = np.zeros((first_unique_day.shape[0]))
+        first_unique_day = DOY[unique_days[0] == DOY]
+        I0_array = np.zeros(first_unique_day.shape[0])
     else:
         first_unique_day = DOY.copy()
-        I0_array = np.zeros((DOY.shape[0]))
+        I0_array = np.zeros(DOY.shape[0])
 
     for i in tqdm(np.arange(0, Ta.__len__())):
         # Nocturnal cloudfraction from Offerle et al. 2003
@@ -504,7 +484,7 @@ def generate_solweig(
                     location,
                     P[i + rise + 1],
                 )  # i+rise+1 to match matlab code. correct?
-                if (CI > 1.0) or (CI == np.inf):
+                if (CI > 1.0) or (np.inf == CI):
                     CI = 1.0
             else:
                 CI = 1.0
@@ -659,15 +639,7 @@ def generate_solweig(
             XM = ""
 
         time_code = (
-            str(int(YYYY[0, i]))
-            + "_"
-            + str(int(DOY[i]))
-            + "_"
-            + XH
-            + str(int(hours[i]))
-            + XM
-            + str(int(minu[i]))
-            + w
+            str(int(YYYY[0, i])) + "_" + str(int(DOY[i])) + "_" + XH + str(int(hours[i])) + XM + str(int(minu[i])) + w
         )
 
         if pois_gdf is not None:
@@ -725,9 +697,7 @@ def generate_solweig(
                     sex,
                 )
                 pois_gdf.at[idx, "PET"] = resultPET
-                resultUTCI = utci.utci_calculator(
-                    Ta[i], RH[i], Tmrt[row_idx, col_idx], WsUTCI
-                )
+                resultUTCI = utci.utci_calculator(Ta[i], RH[i], Tmrt[row_idx, col_idx], WsUTCI)
                 pois_gdf.at[idx, "UTCI"] = resultUTCI
                 pois_gdf.at[idx, "CI_Tg"] = CI_Tg
                 pois_gdf.at[idx, "CI_TgG"] = CI_TgG
@@ -762,8 +732,8 @@ def generate_solweig(
         )
 
     # Output I0 vs. Kglobal plot
-    radG_for_plot = radG[DOY == first_unique_day[0]]
-    hours_for_plot = hours[DOY == first_unique_day[0]]
+    radG_for_plot = radG[first_unique_day[0] == DOY]
+    hours_for_plot = hours[first_unique_day[0] == DOY]
     fig, ax = plt.subplots()
     ax.plot(hours_for_plot, I0_array, label="I0")
     ax.plot(hours_for_plot, radG_for_plot, label="Kglobal")
@@ -777,8 +747,6 @@ def generate_solweig(
     umep_df.to_csv(out_path_str + "/metforcing.csv")
 
     tmrtplot = tmrtplot / Ta.__len__()  # fix average Tmrt instead of sum, 20191022
-    common.save_raster(
-        out_path_str + "/Tmrt_average.tif", tmrtplot, dsm_transf, dsm_crs
-    )
+    common.save_raster(out_path_str + "/Tmrt_average.tif", tmrtplot, dsm_transf, dsm_crs)
 
     rmtree(temp_dir, ignore_errors=True)

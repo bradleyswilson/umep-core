@@ -1,4 +1,5 @@
 # %%
+from importlib import reload
 from pathlib import Path
 
 import geopandas as gpd
@@ -12,6 +13,8 @@ from umep import (
     wall_heightaspect_algorithm,
 )
 
+reload(solweig_algorithm)
+
 #
 bbox = [476070, 4203550, 477110, 4204330]
 working_folder = "temp/tests"
@@ -23,9 +26,9 @@ working_path.mkdir(parents=True, exist_ok=True)
 working_path_str = str(working_path)
 
 # input files for computing
-bldgs_path = "tests/data/bldgs_clip.gpkg"
-trees_path = "tests/data/trees_clip.gpkg"
-tree_canopies_path = "tests/data/tree_canopies_clip.gpkg"
+bldgs_path = "tests/data/athens/bldgs_clip.gpkg"
+trees_path = "tests/data/athens/trees_clip.gpkg"
+tree_canopies_path = "tests/data/athens/tree_canopies_clip.gpkg"
 
 # %%
 # create DSM if necessary
@@ -34,9 +37,7 @@ tree_canopies_path = "tests/data/tree_canopies_clip.gpkg"
 # this saves unnecessary repetition
 # if wanting to repeat, then delete (or rename) the folders / files
 # same idea for remaining cells
-if not Path.exists(working_path / "DSM.tif") or not Path.exists(
-    working_path / "CDSM.tif"
-):
+if not Path.exists(working_path / "DSM.tif") or not Path.exists(working_path / "CDSM.tif"):
     # buildings
     bldgs_gdf = gpd.read_file(bldgs_path)
     bldgs_gdf = bldgs_gdf.to_crs(working_crs)
@@ -49,9 +50,7 @@ if not Path.exists(working_path / "DSM.tif") or not Path.exists(
         pixel_size=pixel_resolution,
     )
     # save to geotiff
-    common.save_raster(
-        working_path_str + "/DSM.tif", bldgs_rast, bldgs_transf, bldgs_gdf.crs
-    )
+    common.save_raster(working_path_str + "/DSM.tif", bldgs_rast, bldgs_transf, bldgs_gdf.crs)
     # GDF1 trees - load and buffer by diameter
     trees_gdf = gpd.read_file(trees_path)
     trees_gdf = trees_gdf.to_crs(working_crs)
@@ -80,9 +79,7 @@ if not Path.exists(working_path / "DSM.tif") or not Path.exists(
     # flatten canopy raster where overlapping buildings
     veg_rast[bldgs_rast > 0] = 0
     # save
-    common.save_raster(
-        working_path_str + "/CDSM.tif", veg_rast, veg_transf, trees_gdf.crs
-    )
+    common.save_raster(working_path_str + "/CDSM.tif", veg_rast, veg_transf, trees_gdf.crs)
 
 # %%
 # wall info for SOLWEIG
@@ -126,11 +123,11 @@ if not Path.exists(working_path / "svf"):
 
 # %%
 # POIs for sampling UTCI
-pois_gdf = gpd.read_file("tests/data/pois.gpkg")
+pois_gdf = gpd.read_file("tests/data/athens/pois.gpkg")
 # iter EPWs
 for epw_path, solweig_dir_name, start_date_Ymd, end_date_Ymd in [
     (
-        "tests/data/athens_2050.epw",
+        "tests/data/athens/athens_2050.epw",
         "solweig_2050_07",
         "2050-07-21",
         "2050-07-22",
@@ -160,3 +157,5 @@ for epw_path, solweig_dir_name, start_date_Ymd, end_date_Ymd in [
             pois_gdf=pois_gdf,
             trans_veg=5,
         )
+
+# %%

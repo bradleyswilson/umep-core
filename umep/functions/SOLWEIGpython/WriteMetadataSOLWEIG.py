@@ -1,13 +1,17 @@
+import sys
 from builtins import str
 
 # This file prints out run information used for each specific run
 from time import strftime
 
+import qgis.core
+from osgeo import gdal, osr
+
 
 def writeRunInfo(
     folderPath,
     filepath_dsm,
-    dsm_crs,
+    gdal_dsm,
     usevegdem,
     filePath_cdsm,
     trunkfile,
@@ -20,6 +24,7 @@ def writeRunInfo(
     metfileexist,
     filePath_metfile,
     metdata,
+    plugin_dir,
     absK,
     absL,
     albedo_b,
@@ -36,6 +41,8 @@ def writeRunInfo(
     cyl,
     demforbuild,
     ani,
+    wallScheme,
+    effusivity,
 ):
     # with open(folderPath + '/RunInfoSOLWEIG.txt', 'w') as file:           	#FO#
     # FO#
@@ -63,11 +70,16 @@ def writeRunInfo(
     ) as file:
         # FO#
         file.write(
-            "This file provides run settings for the SOLWEIG run initiated at: "
-            + strftime("%a, %d %b %Y %H:%M:%S")
+            "This file provides run settings for the SOLWEIG run initiated at: " + strftime("%a, %d %b %Y %H:%M:%S")
         )
         file.write("\n")
         file.write("Version: " + "SOLWEIG v2022a")
+        file.write("\n")
+        file.write("Pyton version: " + str(sys.version))
+        file.write("\n")
+        file.write("GDAL version: " + str(gdal.__version__))
+        file.write("\n")
+        file.write("QGIS version: " + str(qgis.core.Qgis.QGIS_VERSION))
         file.write("\n")
         file.write("\n")
         file.write("SURFACE DATA")
@@ -77,10 +89,12 @@ def writeRunInfo(
         file.write("Model domain: rows = " + str(rows) + ", columns = " + str(cols))
         file.write("\n")
         # get CRS
-        if dsm_crs.is_projected:
-            file.write("Projected reference system: " + str(dsm_crs.to_epsg()))
-        else:
-            file.write("Geographical coordinate system: " + str(dsm_crs.to_epsg()))
+        prj = gdal_dsm.GetProjection()
+        srs = osr.SpatialReference(wkt=prj)
+        if srs.IsProjected:
+            file.write("Projected reference system: " + srs.GetAttrValue("projcs"))
+        file.write("\n")
+        file.write("Geographical coordinate system: " + srs.GetAttrValue("geogcs"))
         file.write("\n")
         file.write("Latitude: " + str(lat))
         file.write("\n")
@@ -94,9 +108,7 @@ def writeRunInfo(
             file.write("Digital vegetation canopy model (CDSM): " + filePath_cdsm)
             file.write("\n")
             if trunkfile == 1:
-                file.write(
-                    "Digital vegetation trunk zone model (TDSM): " + filePath_tdsm
-                )  # FO# zrunk -> trunk
+                file.write("Digital vegetation trunk zone model (TDSM): " + filePath_tdsm)  # FO# zrunk -> trunk
                 file.write("\n")
             else:
                 file.write("Trunkzone estimated from CDSM")
@@ -107,6 +119,8 @@ def writeRunInfo(
             file.write("Vegetation scheme inactive")
             file.write("\n")
         if landcover == 1:
+            file.write("Landcover scheme active. Parameters taken from: " + plugin_dir + "/landcoverclasses_2016a.txt")
+            file.write("\n")
             file.write("Landcover grid: " + filePath_lc)
             file.write("\n")
         else:
@@ -126,9 +140,7 @@ def writeRunInfo(
             file.write("Meteorological file: " + filePath_metfile)
             file.write("\n")
             if onlyglobal == 1:
-                file.write(
-                    "Diffuse and direct shortwave radiation estimated from global radiation"
-                )
+                file.write("Diffuse and direct shortwave radiation estimated from global radiation")
                 file.write("\n")
         else:
             file.write("Meteorological file not used")
@@ -167,17 +179,11 @@ def writeRunInfo(
         file.write("\n")
         file.write("Albedo of walls: " + str(albedo_b))
         file.write("\n")
-        file.write(
-            "Albedo of ground (not used if land cover scheme is active): "
-            + str(albedo_g)
-        )
+        file.write("Albedo of ground (not used if land cover scheme is active): " + str(albedo_g))
         file.write("\n")
         file.write("Emissivity (walls): " + str(ewall))
         file.write("\n")
-        file.write(
-            "Emissivity of ground (not used if land cover scheme is active): "
-            + str(eground)
-        )
+        file.write("Emissivity of ground (not used if land cover scheme is active): " + str(eground))
         file.write("\n")
         file.write("\n")
         file.write("ADDITIONAL SETTINGS")
@@ -196,5 +202,24 @@ def writeRunInfo(
             )
         else:
             file.write("Isotropic sky")
+        file.write("\n")
+        if wallScheme:
+            if effusivity.size == 1:
+                file.write(
+                    "Wall surface parameterization scheme. Wall effusivity set to "
+                    + str(effusivity)
+                    + " J m-2 s-0.5 K-1."
+                )
+            else:
+                for i in range(effusivity.size):
+                    if i == 0:
+                        file.write("There are " + str(effusivity.size) + " wall types:")
+                        file.write("\n")
+                    file.write(
+                        "Wall surface parameterization scheme. Wall effusivity set to "
+                        + str(effusivity[i])
+                        + " J m-2 s-0.5 K-1."
+                    )
+                    file.write("\n")
         file.write("\n")
         file.close()

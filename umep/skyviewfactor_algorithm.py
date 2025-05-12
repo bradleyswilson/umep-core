@@ -62,7 +62,7 @@ def generate_svf(
     out_dir: str,
     cdsm_path: str | None = None,
     trans_veg: float = 3,
-    trunk_ratio: float = 25
+    trunk_ratio: float = 0.25,
 ):
     out_path = Path(out_dir)
     out_path.mkdir(parents=True, exist_ok=True)
@@ -94,9 +94,9 @@ def generate_svf(
 
     # CDSM 2
     #cdsm_2_rast = np.zeros([rows, cols])
-
-    trunk_ratio = trunk_ratio / 100.0
-    cdsm_2_rast = cdsm_rast * trunk_ratio
+    
+    # trunk_ratio = trunk_ratio / 100.0
+    cdsm_2_rast = cdsm_rast * trunk_ratio #issue8
     # compute
     ret = svf.svfForProcessing153(dsm_rast, cdsm_rast, cdsm_2_rast, dsm_scale, use_cdsm)
 
